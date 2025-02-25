@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dữ liệu Cảm biến - IoT</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; text-align: center; }
+        .container { margin-top: 30px; }
+        .table { margin: auto; width: 80%; }
+        .temp-high { background-color: #ff6961 !important; color: white; }
+        .temp-low { background-color: #77dd77 !important; color: black; }
+        .hum-high { background-color: #6495ED !important; color: white; }
+        .hum-low { background-color: #FFD700 !important; color: black; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="my-4">📡 Dữ liệu Nhiệt độ & Độ ẩm</h1>
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nhiệt độ (°C)</th>
+                    <th>Độ ẩm (%)</th>
+                    <th>Thời gian</th>
+                </tr>
+            </thead>
+            <tbody id="data-table-body">
+                <!-- Dữ liệu mới sẽ tự động cập nhật vào đây -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function fetchLatestData() {
+            fetch('/api/latest_data')
+                .then(response => response.json())
+                .then(data => {
+                    let tableBody = document.getElementById("data-table-body");
+                    tableBody.innerHTML = ""; // Xóa dữ liệu cũ trước khi cập nhật mới
+
+                    data.forEach(row => {
+                        let tr = document.createElement("tr");
+
+                        // Xác định class CSS dựa vào giá trị nhiệt độ & độ ẩm
+                        let tempClass = row.temperature > 30 ? "temp-high" : (row.temperature < 20 ? "temp-low" : "");
+                        let humClass = row.humidity > 70 ? "hum-high" : (row.humidity < 30 ? "hum-low" : "");
+
+                        tr.innerHTML = `
+                            <td class="${tempClass}">${row.temperature} °C</td>
+                            <td class="${humClass}">${row.humidity} %</td>
+                            <td>${row.timestamp}</td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+                })
+                .catch(error => console.error("Lỗi tải dữ liệu:", error));
+        }
+
+        setInterval(fetchLatestData, 5000); // Cập nhật mỗi 5 giây
+        fetchLatestData(); // Tải dữ liệu ngay khi mở trang
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
